@@ -37,7 +37,8 @@ export const login = async (req, res) => {
 
     res.cookie("token", token, {
       httpOnly: true,
-      sameSite: "strict",
+      sameSite: "none", // allow cross-site cookies
+      secure: true,     // required for HTTPS
       maxAge: 7 * 24 * 60 * 60 * 1000,
     }).json({ message: "Login successful" });
 
@@ -46,15 +47,20 @@ export const login = async (req, res) => {
   }
 };
 
-
 // ✅ Logout User
 export const logout = (req, res) => {
-  res.clearCookie('token', { httpOnly: true, sameSite: 'strict' });
-  res.status(200).json({ message: 'Logged out successfully' });
+  res.clearCookie("token", {
+    httpOnly: true,
+    sameSite: "none", // match login settings
+    secure: true,     // match login settings
+  });
+  res.status(200).json({ message: "Logged out successfully" });
 };
+
+// ✅ Get User Profile
 export const getUserProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select('username email');
+    const user = await User.findById(req.user.id).select("username email");
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
